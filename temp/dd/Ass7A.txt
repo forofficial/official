@@ -1,0 +1,138 @@
+------------------------------
+Code: Fifo1
+------------------------------
+#include<stdio.h>
+#include<fcntl.h>
+#include<string.h>
+#include<unistd.h>
+#include<sys/stat.h>
+#include<sys/types.h>
+int main()
+{
+	int fd1,fd2,cnt=0;
+	char *myfifo1="file1";
+	char *myfifo2="file2";
+	char str1[100],str2[100];
+	char c;
+	// create fifo   pipes (files)
+	
+	fd1 = mkfifo(myfifo1,0666);  // 2nd param  no 6 is permissions for owener , group_owner , others  it is a read and write permissions for all
+	fd2 = mkfifo(myfifo2,0666);  // read(r) = 4 , write(w) = 2 , execute = 1
+	
+	// read  data to write on first  fifo pipe
+	printf("\n\tEnter String :: ");
+	while( (c= getchar()) != '#')   // fgets(str1,100,stdin);
+	{
+		str1[cnt++] = c;
+	}
+	str1[cnt] = '\0';
+	printf("%s",str1);
+	
+	
+	
+	// write data on first fifo pipe
+	
+	fd1 = open(myfifo1,O_WRONLY);   //  fd1 is a address of the starting character which is given by the open() fun.
+	write(fd1,str1,strlen(str1)+1); // str1 is a source of the data  , strlen(str1)+1 length of string  and +1 is for '\0'
+	close(fd1);
+	
+	// Read data from second pipe
+	
+	fd2  = open(myfifo2,O_RDONLY);
+	read(fd2,str2,100);
+	
+	printf("\n\tMessage from fifo2 process :\n\t %s",str2);
+	
+	close(fd2); // close second fifo2 file
+	
+	
+	
+	
+	
+	
+	return 0;
+}
+
+
+/*
+----------------------------
+OUTPUT
+----------------------------
+gcc Fif1.c
+gcc Fif1.c -o f1
+./f1
+
+	Enter String :: kgvfskuf
+sedgfauy#
+kgvfskuf
+sedgfauy
+	Message from fifo2 process :
+	 
+ No of lines : 2
+ No of words : 2
+ No of characters : 16 
+ */
+----------------------------------------
+fifo2
+----------------------------------------
+#include<stdio.h>
+#include<fcntl.h>
+#include<sys/stat.h>
+#include<unistd.h>
+#define max 1024
+
+int main()
+{
+
+	int fd1,fd2,i=0;
+	FILE *f;
+	char *fifo1="fifo1";
+	char *fifo2="fifo2";
+	char buf1[max],buf2[max];
+	int words=1,ch=0,line=1;
+	mkfifo(fifo2,0666);
+	fd1=open(fifo1,O_RDWR);
+	read(fd1,buf1,sizeof(buf1));
+	close(fd1);
+	printf("\nContent of FIFO :- %s\n",buf1);
+
+	while((buf1[i])!='\0')
+	{
+		if((buf1[i])==' ' || buf1[i]=='\n')
+			{words++;}
+		else
+			{ch++;}
+		if(buf1[i]=='\n')
+			{line++;}
+
+	i++;
+	}
+	
+	
+	printf("\nNo. of Words :- %d \nNo. of char :- %d \nNo. of line :- %d",words,ch,line);
+	buf2[0]=words;
+	buf2[1]=ch;
+	buf2[2]=line;
+	buf2[3]='\0';
+
+	fd2=open(fifo2,O_RDWR);
+	write(fd2,buf2,sizeof(buf2));
+	close(fd2);
+	
+return 0;	
+}
+
+/*
+--------------------------
+output
+--------------------------
+gcc fifo2.c
+gcc fifo2.c -o f2
+./f2
+
+	Pipe1 : kgvfskuf
+sedgfauy
+	No of lines : 2
+	No of words : 1
+	No of characters : 16 
+*/
