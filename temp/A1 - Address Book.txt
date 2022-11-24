@@ -1,0 +1,291 @@
+Assignment No.: 01 (B)
+Title: Write a program to implement an address book with options given below:
+a) Create address book.
+b) View address book.
+c) Insert a record.
+d) Delete a record.
+e) Modify a record.
+f) Exit
+
+Code:
+add()
+{
+	BOOK=$1
+	
+	echo -n "Name of person: "
+	read name
+	
+	echo -n "Phone number: "
+	read phone
+	
+	echo "Should I enter the values: "
+	echo -e "$name : $phone \n"
+	echo "y/n"
+	read answer
+	
+	if [ "$answer" == "y" ]
+	then
+		echo "$name : $phone" >>$BOOK
+	else
+		echo "$name : $phone NOT written to $BOOK"
+	fi
+}
+
+list()
+{
+	echo "--------------------"
+	echo "Name : Phone Number"
+	cat $BOOK
+	echo "--------------------"
+}
+
+findr()
+{
+	echo -n "What person are you seeking: "
+	read findr
+	
+	grep -i ^$findr $BOOK
+	if [ $? -ne 0 ]
+	then
+		echo "No such record"
+	else
+		echo "Record Found !!"
+	fi
+}
+
+del()
+{
+	echo -n "Which name should I delete: "
+	read nm
+	
+	grep -i ^$nm $BOOK
+	if [ $? -ne 0 ]
+	then
+		echo "No such record"
+	else
+		sed -i "/$nm/d" $BOOK
+		echo "Record deleted successfully"
+	fi	
+}
+
+modify()
+{
+	echo -n "Which name should I modify: "
+	read nm
+	
+	echo -n "Enter new name: "
+	read newnm
+	
+	grep -i ^$nm $BOOK
+	if [ $? -ne 0 ]
+	then
+		echo "No such record"
+	else
+		sed -i "s/$nm/$newnm/g" $BOOK
+		echo "Record modified successfully"
+	fi	
+}
+
+	exit=0
+	
+	echo -n "Enter book name to create/open: "
+	read BOOK
+	touch $BOOK
+	
+	while [ $exit -ne 1 ]
+	do
+		echo "\nWhat operation do you want to perform? "
+		echo  -e "1. Add\n2. List\n3. Find\n4. Delete\n5. Modify\n6. Exit\n"
+		echo "Enter your choice: "
+		read answer
+	
+		if [ $answer = 1 ]
+		then
+			add $BOOK
+		elif [ $answer = 2 ]
+		then
+			list $BOOK
+		elif [ $answer = 3 ]
+		then
+			findr $BOOK
+		elif [ $answer = 4 ]
+		then
+			del $BOOK
+		elif [ $answer = 5 ]
+		then
+			modify $BOOK
+		elif [ $answer = 6 ]
+		then
+			exit=1
+		else
+			echo "I do not understand the command."
+		fi
+	done
+	
+	exit 0
+		
+
+Terminal Operation:
+bash a1.sh
+
+Enter book name to create/open: addbook
+
+What operation do you want to perform?
+1. Add
+2. List
+3. Find
+4. Delete
+5. Modify
+6. Exit
+
+Enter your choice:
+1
+Name of person: Rafael Nadal
+Phone number: 123456
+Should I enter the values:
+Rafael Nadal : 123456
+
+y/n
+y
+
+What operation do you want to perform?
+1. Add
+2. List
+3. Find
+4. Delete
+5. Modify
+6. Exit
+
+Enter your choice:
+1
+Name of person: Roger Federer
+Phone number: 456789
+Should I enter the values:
+Roger Federer : 456789
+
+y/n
+y
+
+What operation do you want to perform?
+1. Add
+2. List
+3. Find
+4. Delete
+5. Modify
+6. Exit
+
+Enter your choice:
+3
+What person are you seeking: Rafael
+Rafael Nadal : 123456
+Record Found !!
+
+What operation do you want to perform?
+1. Add
+2. List
+3. Find
+4. Delete
+5. Modify
+6. Exit
+
+Enter your choice:
+2
+--------------------
+Name : Phone Number
+Rafael Nadal : 123456
+Roger Federer : 456789
+--------------------
+
+What operation do you want to perform?
+1. Add
+2. List
+3. Find
+4. Delete
+5. Modify
+6. Exit
+
+Enter your choice:
+4
+Which name should I delete: Roger
+Roger Federer : 456789
+Record deleted successfully
+
+What operation do you want to perform?
+1. Add
+2. List
+3. Find
+4. Delete
+5. Modify
+6. Exit
+
+Enter your choice:
+2
+--------------------
+Name : Phone Number
+Rafael Nadal : 123456
+--------------------
+
+What operation do you want to perform?
+1. Add
+2. List
+3. Find
+4. Delete
+5. Modify
+6. Exit
+
+Enter your choice:
+1
+Name of person: Alex Zverev
+Phone number: 789456
+Should I enter the values:
+Alex Zverev : 789456
+
+y/n
+y
+
+What operation do you want to perform?
+1. Add
+2. List
+3. Find
+4. Delete
+5. Modify
+6. Exit
+
+Enter your choice:
+5
+Which name should I modify: Alex
+Enter new name: Alexander Zverev
+Alex Zverev : 789456
+Record modified successfully
+
+What operation do you want to perform?
+1. Add
+2. List
+3. Find
+4. Delete
+5. Modify
+6. Exit
+
+Enter your choice:
+2
+--------------------
+Name : Phone Number
+Rafael Nadal : 123456
+Alexander Zverev Zverev : 789456
+--------------------
+
+What operation do you want to perform?
+1. Add
+2. List
+3. Find
+4. Delete
+5. Modify
+6. Exit
+
+Enter your choice:
+6
+
+
+Output: (in file addbook)
+Rafael Nadal : 123456
+Alexander Zverev Zverev : 789456

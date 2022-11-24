@@ -1,0 +1,130 @@
+﻿Assignment No.: 02 (A) – Zombie State
+Title: Implement the C program in which main program accepts the integers to be sorted. Main program usesthe FORK system call to create a new process called a child process. Parent process sortsthe integers using sorting algorithm and waits for child process using WAIT system call to sort the integers using any  sorting algorithm. Also demonstrate zombie and orphan states.
+
+Code (using Quick Sort) :
+#include<stdio.h>
+#include<stdlib.h>
+#include<sys/types.h>
+#include<sys/wait.h>
+#include<unistd.h>
+#include<signal.h>
+
+int split(int[], int, int);
+void quick_sort(int*, int, int);
+void display(int[], int);
+int static cArr[50];
+int static pArr[50];
+
+void display(int a[], int size)
+{
+	for(int i=0;i<size;i++)
+		printf("%d\t",a[i]);
+	printf("\n");
+}
+
+int split(int a[], int lower, int upper)
+{
+	int i, p, q, t;
+	
+	p = lower+1;
+	q = upper;
+	i = a[lower];
+	
+	while(q >= p)
+	{
+		while(a[p] < i)
+			p++;
+		while(a[q] > i)
+			q--;
+		if( q > p)
+		{
+			t = a[p];
+			a[p] = a[q];
+			a[q] = t;
+		}
+	}
+	t = a[lower];
+	a[lower] = a[q];
+	a[q] = t;
+	
+	return q;
+}
+
+void quick_sort(int a[], int lower, int upper)
+{
+	int i;
+	if(upper > lower)
+	{
+		i = split(a, lower, upper);
+		quick_sort(a, lower, i-1);
+		quick_sort(a, i+1, upper);	
+	}
+}
+
+void main()
+{
+	int pid;
+	int size, i, status;
+	
+	printf("Enter the number of integers to sort:\t");
+	scanf("%d",&size);
+	
+	int a[size];
+	for(i=0;i<size;i++)
+	{
+		printf("Enter number %d:",(i+1));
+		scanf("%d",&a[i]);
+		pArr[i]=a[i];
+		cArr[i]=a[i];
+	}
+	
+	printf("[ Forking Child Process ...] \n");
+	pid = fork();
+	
+	if(pid < 0) //Process Creation Failed 
+	{
+		exit(-1);
+	}
+	else if (pid == 0) //Child Process
+	{
+		printf("\nChild's Parent ID: %d \n",getppid());
+		quick_sort(cArr,0,size-1);
+		printf("The sorted list by Child: \n");
+		display(cArr,size);
+		printf("* The child has exited *\n");
+		printf("* It is zombie state! *\n");
+	}
+	else  //Parent Process
+	{
+		sleep(1);
+		quick_sort(pArr,0,size-1);
+		printf("The sorted list by Parent: \n");
+		display(pArr,size);
+		printf("Parent Process is %d waiting ...\n", getpid());
+		int status = -1;
+		wait(&status);
+		printf("Parent process completed %d with child status %d ...\n", getpid(), status);
+		printf("* The parent has exited *\n");
+	}
+}
+
+Terminal Operation: 
+
+
+Enter the number of integers to sort:	5
+Enter number 1:50
+Enter number 2:45
+Enter number 3:23
+Enter number 4:96
+Enter number 5:10
+[ Forking Child Process ...] 
+
+Child's Parent ID: 4940 
+The sorted list by Child: 
+10	23	45	50	96	
+* The child has exited *
+* It is zombie state! *
+The sorted list by Parent: 
+10	23	45	50	96	
+Parent Process is 4940 waiting ...
+Parent process completed 4940 with child status 0 ..

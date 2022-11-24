@@ -1,0 +1,107 @@
+﻿Assignment No.: 04 (B)
+Title: Thread synchronization and mutual exclusion using mutex. Application to demonstrate: Reader – Writer problem with reader priority.
+
+Code:
+#include <pthread.h> 
+#include <semaphore.h> 
+#include <stdio.h> 
+#include<stdlib.h> 
+
+sem_t rw_mutex;          
+pthread_mutex_t mutex;    
+int cnt = 1; 
+int numreader = 0; 
+
+void *writer(void *wno) 
+{   int now=(*((int *)wno)); 
+    printf("\n%d Writer is trying to enter",now);    
+    sem_wait(&rw_mutex);  //lock 
+
+    printf("\nWriter is writing..."); //writer is not actually writing (we are just showing the functioning of lock & unlock) 
+    sem_post(&rw_mutex);  //unlock 
+    printf("\n%d Writer is leaving...",now);    
+} 
+
+void *reader(void *rno) 
+{   
+    // Reader acquire the lock before modifying numreader 
+    int nor=(*((int *)rno)); 
+    printf("\n%d Reader is trying to enter...", nor); 
+    pthread_mutex_lock(&mutex);  //lock   (it is locked so that numreader value can be increased i.e. it is modified) 
+    numreader++; 
+    if(numreader == 1) { 
+        sem_wait(&rw_mutex); // If this id the first reader, then it will block the writer 
+    } 
+    pthread_mutex_unlock(&mutex); //unlock 
+    // Reading Section 
+    printf("\nReader is reading..."); 
+
+    // Reader acquire the lock before modifying numreader 
+    pthread_mutex_lock(&mutex);  //lock 
+    numreader--; 
+    if(numreader == 0) { 
+        sem_post(&rw_mutex); // If this is the last reader, it will wake up the writer. 
+    } 
+    pthread_mutex_unlock(&mutex);  //unlock 
+    printf("\n%d Reader is leaving...", nor); 
+} 
+
+int main() 
+{   
+    int n1,n2;    
+    pthread_t read[10],write[10]; 
+    printf("\nEnter the no of readers: "); 
+    scanf("%d",&n1); 
+    printf("\nEnter the no of writers: "); 
+    scanf("%d",&n2); 
+    pthread_mutex_init(&mutex, NULL); 
+    sem_init(&rw_mutex,0,1); 
+    int i; 
+    int pc[10] = {1,2,3,4,5,6,7,8,9,10}; //Just used for numbering the producer and consumer 
+
+    for(i = 0; i < n1; i++) { 
+        pthread_create(&read[i], NULL, (void *)reader, (void *)&pc[i]); 
+    } 
+    for(i = 0; i < n2; i++) { 
+        pthread_create(&write[i], NULL, (void *)writer, (void *)&pc[i]); 
+    } 
+
+    for(i = 0; i < n1; i++) { 
+        pthread_join(read[i], NULL); 
+    } 
+    for(i = 0; i < n2; i++) { 
+        pthread_join(write[i], NULL); 
+    } 
+
+    pthread_mutex_destroy(&mutex); 
+    sem_destroy(&rw_mutex); 
+
+    return 0; 
+} 
+
+Output (Terminal):
+gcc rewt.c -pthread 
+./a.out 
+
+Enter the no of readers: 4 
+
+Enter the no of writers: 2 
+
+1 Reader is trying to enter... 
+Reader is reading... 
+1 Reader is leaving... 
+1 Writer is trying to enter 
+Writer is writing... 
+1 Writer is leaving... 
+2 Reader is trying to enter... 
+Reader is reading... 
+2 Reader is leaving... 
+2 Writer is trying to enter 
+Writer is writing... 
+2 Writer is leaving... 
+3 Reader is trying to enter... 
+Reader is reading... 
+3 Reader is leaving... 
+4 Reader is trying to enter... 
+Reader is reading... 
+

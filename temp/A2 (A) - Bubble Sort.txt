@@ -1,0 +1,104 @@
+﻿Assignment No.: 02 (A) – Zombie State
+Title: Implement the C program in which main program accepts the integers to be sorted. Main program usesthe FORK system call to create a new process called a child process. Parent process sortsthe integers using sorting algorithm and waits for child process using WAIT system call to sort the integers using any  sorting algorithm. Also demonstrate zombie and orphan states.
+
+Code (using Bubble Sort):
+#include<stdio.h>
+#include<stdlib.h>
+#include<sys/types.h>
+#include<sys/wait.h>
+#include<unistd.h>
+#include<signal.h>
+
+void bubble_sort(int [], int);
+void display(int[], int);
+int static cArr[50];
+int static pArr[50];
+
+void main()
+{
+	int pid;
+	int size, i, status;
+	
+	printf("Enter the number of integers to sort:\t");
+	scanf("%d",&size);
+	
+	int arr[size];
+	for(i=0;i<size;i++)
+	{
+		printf("Enter number %d:",(i+1));
+		scanf("%d",&arr[i]);
+		pArr[i]=arr[i];
+		cArr[i]=arr[i];
+	}
+	
+	printf("[ Forking Child Process ...] \n");
+	pid = fork();
+	
+	if(pid < 0) //Process Creation Failed 
+	{
+		exit(-1);
+	}
+	else if (pid == 0) //Child Process
+	{
+		printf("\nChild's Parent ID: %d \n",getppid());
+		bubble_sort(cArr,size);
+		printf("The sorted list by Child: \n");
+		display(cArr,size);
+		printf("* The child has exited *\n");
+		printf("* It is zombie state! *\n");
+	}
+	else  //Parent Process
+	{
+		sleep(1);
+		bubble_sort(pArr,size);
+		printf("The sorted list by Parent: \n");
+		display(pArr,size);
+		printf("Parent Process is %d waiting ...\n", getpid());
+		int status = -1;
+		wait(&status);
+		printf("Parent process completed %d with child status %d ...\n", getpid(), status);
+	}
+}
+
+void display(int arr[], int size)
+{
+	for(int i=0;i<size;i++)
+		printf("%d\t",arr[i]);
+	printf("\n");
+}
+
+void bubble_sort(int arr[], int size)
+{
+	int i, j;
+	for (i = 0; i < size - 1; i++)  
+        for (j = 0; j < size - i - 1; j++)
+            if (arr[j] > arr[j + 1])
+            {
+            	int temp = arr[j];
+            	arr[j] = arr[j+1];
+            	arr[j+1] = temp;
+            }
+}	
+
+Terminal Operation:
+gcc a2_bubble.c
+./a.out
+
+Enter the number of integers to sort:	5
+Enter number 1:45
+Enter number 2:26
+Enter number 3:89
+Enter number 4:09
+Enter number 5:62
+[ Forking Child Process ...] 
+
+Child's Parent ID: 5936 
+The sorted list by Child: 
+9	26	45	62	89	
+* The child has exited *
+* It is zombie state! *
+The sorted list by Parent: 
+9	26	45	62	89	
+Parent Process is 5936 waiting ...
+Parent process completed 5936 with child status 0 ...
+ 

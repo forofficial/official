@@ -1,0 +1,132 @@
+﻿Assignment No.: 7(A)
+Title: FIFOS
+Full duplex communication between two independent processes. First process accepts
+sentences and writes on one pipe to be read by second process and second process counts number of
+characters, number of words and number of lines in accepted sentences, writes this output in a text file
+and writes the contents of the file on second pipe to be read by first process and displays on standard
+output.
+
+Code:
+FIFO 1 CODE:
+#include<stdio.h>
+#include<stdlib.h>
+#include<unistd.h>
+#include<fcntl.h>
+#include<sys/stat.h>
+
+#define MAX_BUF 1024
+
+int main()
+{
+    int fd,c=0;
+    char *fifo1="fifo1";   //assign name to fifo
+    char *fifo2="fifo2";
+    int fd1,fd2;
+   // int words=1,lines=1,chars=0;
+    char buf1[MAX_BUF];
+    char buf2[MAX_BUF];
+    mkfifo(fifo1,0666);  //0666 - rwx (can use 0777 as well)
+    fd=open(fifo1,O_RDWR);   
+    char str;
+    printf("\nEnter the String:");
+    while ((str=getchar())!='$')
+   	 buf1[c++]=str;
+    buf1[c]='\0';
+    write(fd,buf1,sizeof(buf1));  //write fifo in buffer
+    close(fd);
+    sleep(3);
+    fd2=open(fifo2,O_RDWR);
+    read(fd2,buf2,sizeof(buf2));
+    printf("\nThe counts of file WORDS, CHARACTERS, LINES are- %d - %d - %d \n",buf2[0], buf2[1], buf2[2]);
+    close(fd2);
+    return 0;
+}
+
+FIFO  2 CODE:
+#include<stdio.h>
+#include<stdlib.h>
+#include<unistd.h>
+#include<fcntl.h>
+#include<sys/stat.h>
+#include<string.h>
+
+#define MAX_BUF 1024
+
+int main()
+{
+   
+    char *fifo1="fifo1";
+    FILE *fp;
+    char *fifo2="fifo2";
+    int fd1,fd2;
+    int words=1,lines=1,chars=0;
+    char buf1[MAX_BUF], buf2[MAX_BUF];
+    
+    char c[5],w[5],l[5];
+    fd1=open(fifo1,O_RDWR);  //open fif1
+    read(fd1,buf1,sizeof(buf1)); //read fifo into the buffer
+    close(fd1);  //close fifo
+    printf("\nThe contents of file are %s\n",buf1);
+    int i=0;
+      while(buf1[i]!='$')
+          {
+            if(buf1[i]==' '||buf1[i]=='\n')
+             {words++;}
+            else
+             {chars++;}
+             if(buf1[i]=='\n')
+             { lines++;}
+           i++;
+           }
+     printf("\n No of Words: %d",words);
+     printf("\n No of Characters: %d",chars);
+     printf("\n No of Lines: %d",lines);
+     
+     strcpy(c,"\0");
+     fp=fopen("test.txt","w");
+     fprintf(fp,"%d %d %d",chars,words,lines); //print details into files
+     fclose(fp);
+     
+     fp=fopen("test.txt","r");
+     fscanf(fp,"%s %s %s",c ,w,l);  
+     fclose(fp);
+     
+     strcat(c," ");  //concatenate the words into one string
+     strcat(c,w);
+     strcat(c," ");
+     strcat(c,l);
+     printf("\n output of counting %s",c);
+     
+     mkfifo(fifo1,0666); 
+          
+    fd2=open(fifo2,O_RDWR); 
+    write(fd2,c,20);
+    close(fd2);
+    return 0;
+}
+
+Terminal Operation:
+FIFO 1 - Output:
+gcc fifo1.c -o f1
+./f1
+
+Enter the String:Hello   
+World
+$
+
+The counts of file WORDS, CHARACTERS, LINES are- 24 - -37 - 22 
+
+
+FIFO 2 - Output:
+gcc fifo2.c -o f2
+./f2
+
+The contents of file are Hello 
+World
+
+
+ No of Words: 12
+ No of Characters: 1037
+ No of Lines: 7
+ output of counting 1037
+

@@ -1,0 +1,104 @@
+#include<stdio.h>
+#include<iostream>
+#include<bits/stdc++.h>
+#include<stdlib.h>
+#include<math.h>
+using namespace std;
+
+int tracks,No_req,head,idx,choice;
+int req[50],fin[50],sorted[50];
+
+void menu(){
+    cout << "Please Select your choice:" << endl;
+
+    cout << "1. Input Data " << endl;
+    cout << "2. SSTF " << endl;
+    cout << "3. SCAN " << endl;
+    cout << "4. LOOK " << endl;
+    cout << "5. Exit " << endl;
+    cin >> choice;
+
+}
+
+void input(){
+    cout << "Enter the No. Of Tracks : " << endl;
+    cin >> tracks;
+    cout << "Enter The No. of requests : " << endl;
+    cin >> No_req;
+    cout << "Please Enter the I/O requests in FIFO Order :" << endl;
+
+    for(int i=0;i<No_req;i++){
+        cin >> req[i];
+    }
+
+    cout << "Please Enter Current Head Position. " << endl;
+    cin >> head;
+
+    for(int i=0;i<No_req;i++){
+        sorted[i]=req[i];
+    }
+    sorted[No_req]=head;
+    sort(sorted, sorted+No_req+1);
+    idx =0;
+    for(int i=0;i<=No_req;i++){
+        if(sorted[i]==head){
+            idx=i;
+        }
+    }
+    
+}
+
+void sstf(){
+
+    int diffn,diffp,headn,headp,dist=0;
+    headn=idx+1;
+    headp=idx-1;
+    cout << head << "=>";
+
+    for(int i=0;i<No_req+1;i++){
+        diffn = -1*(sorted[idx]-sorted[headn]);
+        diffp = (sorted[idx]-sorted[headp]);
+
+        if(diffn>diffp && headp!=-1){
+
+            idx=headp;
+            fin[i]=sorted[headp];
+            headp--;
+            }
+
+        else{
+             idx=headn;
+            fin[i]=sorted[headn];
+            headn++;
+        }
+
+
+    }
+
+    for(int i=0;i<No_req;i++){
+        cout << fin[i] << "=>";
+    }
+
+
+}
+int main(int argc, char const *argv[])
+{
+
+     while(1)
+    {
+        menu();
+        switch(choice)
+        {
+        case 1: input();
+            break;
+        case 2: sstf();
+            break;
+        case 5: exit(0);       
+            break;
+        default:
+            printf("\n Enter valid choice");
+            break;
+        }
+    }
+    return 0;
+}
