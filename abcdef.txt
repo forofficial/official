@@ -1,0 +1,38 @@
+<h1>{{Title}}</h1>
+
+<input type="text" #name placeholder="name"> <br>
+
+<input type="text" #address placeholder="address"> <br>
+
+<input type="email" #email placeholder="email"> <br>
+
+<input type="text" #contact placeholder="contact"> <br>
+
+<input type="password" #password placeholder="password"> <br>
+
+<button (click)="getvalue(name.value,address.value,email.value,contact.value)">Register</button>
+
+<p>Your data</p>
+
+<p>Name : {{displayname}}</p>
+<p>Address : {{displayaddress}}</p>
+<p>COntact : {{displaycontact}}</p>
+<p>Email : {{displayemail}}</p>
+
+
+
+
+
+
+  title = 'Registration Form';
+
+  displayname = '';
+  displayaddress = '';
+  displaycontact = '';
+  displayemail = '';
+
+  getvalue(name:string,address:string,contact:string,email:string){
+    this.displayname=name;
+    this.displayaddress=address;
+    this.displaycontact=contact;
+    this.displayemail=email;
